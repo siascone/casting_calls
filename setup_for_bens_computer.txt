@@ -1,0 +1,15 @@
+--- Add Git tools
+
+brew install git
+git config --global user.name "Your Name" 
+git config --global user.email "Your Email"
+git config --global init.defaultBranch main
+
+--- install lxml for beautifulsoup library
+pip install lxml
+
+--- install requests library
+pip install requests
+
+--- add beautifulsoup to test script
+from bs4 import BeautifulSoup
