@@ -13,16 +13,25 @@ def fetch_performer_job_links(url):
         # find categories and select performer
         category_selector = page.locator("#bsp-jobs-list-category")
         category_selector.select_option(value="Performer")
-        
-        ### >>> TODO set filter for PAID and REGULAR work
-        
-        
         # wait for postings to reload
         # page.locator("#component-saozdn").wait_for()
         page.wait_for_load_state("load")
         
-        # pull first 10 pages of links to postings
-        while page_count <= 2:
+        paid_selector = page.locator("#bsp-jobs-list-isPaid")
+        paid_selector.select_option(value="1")
+        # wait for postings to reload
+        # page.locator("#component-saozdn").wait_for()
+        page.wait_for_load_state("load")
+        
+        work_type_selector = page.locator("#bsp-jobs-list-isInternship")
+        work_type_selector.select_option(value="0")
+        # wait for postings to reload
+        # page.locator("#component-saozdn").wait_for()
+        page.wait_for_load_state("load")
+        
+        
+        # pull first 3 pages of links to postings
+        while page_count <= 3:
             print(f"Scraping page {page_count}...")
             
             # 1. Collect the information
