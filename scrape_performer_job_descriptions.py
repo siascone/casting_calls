@@ -20,15 +20,32 @@ def scrape_job_descriptions(url_list):
                 # This splits by '/' and takes the last element
                 job_id = url.rstrip('/').split('/')[-1]
 
-                # 2. Capture the description text
-                description_element = page.locator("h4:has-text('DESCRIPTION') + p")
-                description = description_element.inner_text().strip() if description_element.count() > 0 else "N/A"
+                # 2. Capture the full job description
+                # find all sections with class "jobs-section"
+                description_sections = page.locator(".jobs-section").all()
+                
+                description_sections_text = []
+                # examine each section and pull all inner text
+                for section in description_sections:
+                    section_text = section.inner_text()
+                    clean_section_text = section_text.strip()
+                    description_sections_text.append(clean_section_text)
+                
+                # combine all section text into one text object
+                all_text_combined = "\n".join(description_sections_text)
+                all_text_cleaned = all_text_combined.strip()
+
+                # capture job title
+                
+                job_title = page.locator(".bsp-component-title.jobs-page-title")
+                job_title_text = job_title.inner_text()
 
                 # 3. Create the object
                 job_obj = {
                     "id": job_id,
+                    "title": job_title_text,
                     "url": url,
-                    "description": description
+                    "description": all_text_cleaned
                 }
                 
                 job_results.append(job_obj)

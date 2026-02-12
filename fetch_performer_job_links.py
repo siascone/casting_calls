@@ -29,9 +29,8 @@ def fetch_performer_job_links(url):
         # page.locator("#component-saozdn").wait_for()
         page.wait_for_load_state("load")
         
-        
-        # pull first 3 pages of links to postings
-        while page_count <= 3:
+        # pull first 2 pages of links to postings
+        while page_count <= 2:
             print(f"Scraping page {page_count}...")
             
             # 1. Collect the information
