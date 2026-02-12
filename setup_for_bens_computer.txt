@@ -11,5 +11,8 @@ pip install lxml
 --- install requests library
 pip install requests
 
+--- instal playwright
+pip install playwright
+
 --- add beautifulsoup to test script
 from bs4 import BeautifulSoup

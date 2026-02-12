@@ -1,0 +1,76 @@
+from playwright.sync_api import sync_playwright
+
+def fetch_performer_job_links(url):
+    with sync_playwright() as p:
+        # Launch browser (headless=False lets you watch the magic happen)
+        browser = p.chromium.launch(headless=False)
+        page = browser.new_page()
+        page.goto(url)
+
+        links = []
+        page_count = 1
+        
+        # find categories and select performer
+        category_selector = page.locator("#bsp-jobs-list-category")
+        category_selector.select_option(value="Performer")
+        
+        ### >>> TODO set filter for PAID and REGULAR work
+        
+        
+        # wait for postings to reload
+        # page.locator("#component-saozdn").wait_for()
+        page.wait_for_load_state("load")
+        
+        # pull first 10 pages of links to postings
+        while page_count <= 2:
+            print(f"Scraping page {page_count}...")
+            
+            # 1. Collect the information
+            # listings = page.locator(".loadmore-item").all_text_content()
+            # all_data.extend(listings)
+            
+            # 1. Locate all parent containers with the specific class
+            # Replace 'item-container-class' with your actual class name
+            jobs = page.locator(".loadmore-item").all()
+            
+            for job in jobs:
+                # Use the 'item' locator as the starting point to find the <a> tag
+                # The '>>' syntax or chaining .locator() searches specifically inside this div
+                link_element = job.locator("a")
+                
+                # 3. Extract the info you need
+                link_url = link_element.get_attribute("href")
+                # link_text = link_element.inner_text()
+                
+                links.append(link_url)
+                
+                # print(f"Found link: {link_text} -> {link_url}")
+
+            # 2. Find the "Next" button
+            # 'text="Next"' is a powerful Playwright selector
+            # next_button = page.get_by_role("button", name="Next")
+
+            more_button = page.locator("#load-more-oob")
+
+            # 3. Check if it exists and is visible
+            if more_button.is_visible():
+                more_button.click()
+                
+                # Wait for the network to settle or a specific element to load
+                page.wait_for_load_state("load")
+                page_count += 1
+            else:
+                print("No more pages found.")
+                break
+
+        print(f"Scraped {len(links)} items total.")
+        browser.close()
+        
+        output_file_name = "links.txt"
+        with open(output_file_name, 'w') as file:
+            file.write('\n'.join(links))
+            
+        return links
+
+# Example usage:
+# fetch_performer_job_links("https://playbill.com/jobs")
