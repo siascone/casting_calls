@@ -3,7 +3,7 @@ from playwright.sync_api import sync_playwright
 def fetch_performer_job_links(url):
     with sync_playwright() as p:
         # Launch browser (headless=False lets you watch the magic happen)
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         page.goto(url)
 
@@ -31,7 +31,7 @@ def fetch_performer_job_links(url):
         
         # pull first 2 pages of links to postings
         while page_count <= 2:
-            print(f"Scraping page {page_count}...")
+            print(f"Scraping page {page_count}...", flush=True)
             
             # 1. Collect the information
             # listings = page.locator(".loadmore-item").all_text_content()
@@ -68,14 +68,14 @@ def fetch_performer_job_links(url):
                 page.wait_for_load_state("load")
                 page_count += 1
             else:
-                print("No more pages found.")
+                print("No more pages found.", flush=True)
                 break
 
-        print(f"Scraped {len(links)} items total.")
+        print(f"Scraped {len(links)} job links total.", flush=True)
         browser.close()
         
-        output_file_name = "links.txt"
-        with open(output_file_name, 'w') as file:
+        output_file_path = "./output_files/job_links.txt"
+        with open(output_file_path, 'w') as file:
             file.write('\n'.join(links))
             
         return links

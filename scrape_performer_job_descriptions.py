@@ -49,16 +49,16 @@ def scrape_job_descriptions(url_list):
                 }
                 
                 job_results.append(job_obj)
-                print(f"Processed Job ID: {job_id}")
+                print(f"Processed Job ID: {job_id}", flush=True)
 
             except Exception as err:
-                print(f"Skipping {url} due to error: {err}")
+                print(f"Skipping {url} due to error: {err}", flush=True)
 
         browser.close()
         
         # write to file
-        output_file_name = "job_descriptions.json"
-        with open(output_file_name, "w") as f:
+        output_file_path = "./output_files/job_descriptions.json"
+        with open(output_file_path, "w") as f:
             json.dump(job_results, f, indent=4)
     # return job_results
 

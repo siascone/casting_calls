@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Playwright Scraper Console</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #start-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #start-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #terminal {
+            background-color: #1e1e1e;
+            color: #33ff33;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+            margin-top: 20px;
+            height: 350px;
+            overflow-y: auto;
+            border-radius: 8px;
+            text-align: left;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        #download-area {
+            margin-top: 20px;
+            display: none;
+            padding: 15px;
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            border-radius: 6px;
+        }
+
+        .download-link {
+            color: #2e7d32;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 2px solid #2e7d32;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Playbill Job Description Scraper</h1>
+        <!-- <p>Monitor your Playwright script in real-time below.</p> -->
+         <p>Pressing Run Scraper will result in the first 120 Regular, Paid, Performer Job Descriptions to be scraped from <a href="https://playbill.com/jobs" target="_blank" rel="noopener noreferrer">https://playbill.com/jobs</a></p>
+
+        <button id="start-btn" onclick="startScraper()">Run Scraper</button>
+
+        <div id="terminal">> Ready. Click 'Run Scraper' to begin.</div>
+
+        <div id="download-area">
+            <strong>Success!</strong> Data has been collected.
+            <a href="/get-file" class="download-link">Download job_descriptions.json</a>
+        </div>
+    </div>
+
+    <script>
+        function startScraper() {
+            const terminal = document.getElementById('terminal');
+            const startBtn = document.getElementById('start-btn');
+            const downloadArea = document.getElementById('download-area');
+
+            // Clear previous state
+            terminal.innerHTML = "> Establishing connection to server...\n";
+            downloadArea.style.display = 'none';
+            startBtn.disabled = true;
+
+            const eventSource = new EventSource('/stream-scraper');
+
+            eventSource.onmessage = function (event) {
+                const data = event.data;
+
+                if (data === "[DONE]") {
+                    terminal.innerHTML += "\n\n[COMPLETED]";
+                    eventSource.close();
+                    startBtn.disabled = false;
+                    downloadArea.style.display = 'block';
+                } else if (data.includes("[SYSTEM]")) {
+                    terminal.innerHTML += `<span style="color: #00bfff">${data}</span>\n`;
+                } else {
+                    terminal.innerHTML += data + "\n";
+                }
+
+                // Keep terminal scrolled to bottom
+                terminal.scrollTop = terminal.scrollHeight;
+            };
+
+            eventSource.onerror = function () {
+                terminal.innerHTML += "\n<span style='color: #ff4444'>[ERROR]: Stream disconnected or server offline.</span>";
+                eventSource.close();
+                startBtn.disabled = false;
+            };
+        }
+    </script>
+
+</body>
+
+</html>
+
+
+
+
+<!-- <!DOCTYPE html>
+<html>
+
+<head>
+    <title>Job Scraper Tool</title>
+</head>
+
+<body>
+    <h1>Playbill Job Data Extractor</h1>
+    <p>Click the button below to start the scraper. The file will download automatically when finished.</p>
+
+    <a href="/run-scraper" class="btn" onclick="showLoading()">Start Scrape & Download</a>
+
+    <div id="status" class="loading">Scraper is running... Please wait.</div>
+
+    <div id="terminal-container">
+        <div id="status-bar">Console Output</div>
+        <div id="console-log"></div>
+    </div>
+    
+    <div id="download-area" style="display:none; margin-top: 20px;">
+        <p>Scrape complete!</p>
+        <a href="/get-file" class="download-btn">Download Results (JSON)</a>
+    </div>
+    
+    <style>
+        #terminal-container {
+            background: #121212;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 800px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+    
+        #status-bar {
+            background: #333;
+            color: #aaa;
+            padding: 5px 15px;
+            font-size: 12px;
+            font-family: sans-serif;
+        }
+    
+        #console-log {
+            color: #00ff00;
+            /* Classic Terminal Green */
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            text-align: left;
+        }
+    
+        .download-btn {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+
+    <script>
+        function startScraper() {
+                const logDiv = document.getElementById('console-log');
+                const startBtn = document.getElementById('start-btn');
+                const downloadArea = document.getElementById('download-area');
+
+                // Reset UI
+                logDiv.innerText = "> Initializing...\n";
+                startBtn.disabled = true;
+                downloadArea.style.display = 'none';
+
+                const eventSource = new EventSource('/run-scraper');
+
+                eventSource.onmessage = function (event) {
+                    if (event.data.trim() === "[DONE]") {
+                        logDiv.innerText += "\n[PROCESS COMPLETED SUCCESSFULLY]";
+                        eventSource.close();
+                        startBtn.disabled = false;
+
+                        // Show the download button instead of forced redirect
+                        downloadArea.style.display = 'block';
+                    } else {
+                        // Append only to the specific div
+                        logDiv.innerText += event.data + "\n";
+
+                        // Auto-scroll to the bottom of the div
+                        logDiv.scrollBottom = logDiv.scrollHeight;
+                    }
+                };
+
+                eventSource.onerror = function () {
+                    logDiv.innerText += "\n[ERROR]: Connection to server lost.";
+                    eventSource.close();
+                    startBtn.disabled = false;
+                };
+            }
+    </script>
+</body>
+
+</html> -->
